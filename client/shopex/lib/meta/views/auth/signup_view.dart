@@ -2,8 +2,10 @@ import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 import 'package:shopex/app/shared/colors.dart';
 import 'package:shopex/app/shared/dimensions.dart';
+import 'package:shopex/core/providers/auth_provider.dart';
 import 'package:shopex/meta/views/auth/login_view.dart';
 
 class SignupView extends StatelessWidget {
@@ -112,19 +114,33 @@ class SignupView extends StatelessWidget {
                       ]),
                     ),
                     vSizedBox2,
-                    Container(
-                      width: 300.0,
-                      height: 50.0,
-                      decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(1),
-                          borderRadius: BorderRadius.circular(18.0)),
-                      child: Center(
-                        child: Text(
-                          "Sign Up",
-                          style: TextStyle(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.w900,
-                              fontFamily: "Montserrat"),
+                    GestureDetector(
+                      onTap: () {
+                        if (emailController.text.isNotEmpty &&
+                            nameController.text.isNotEmpty &&
+                            passwordController.text.isNotEmpty) {
+                          Provider.of<AuthProvider>(context, listen: false)
+                              .signup({
+                            "username": nameController.text,
+                            "useremail": emailController.text,
+                            "userpassword": passwordController.text
+                          });
+                        }
+                      },
+                      child: Container(
+                        width: 300.0,
+                        height: 50.0,
+                        decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(1),
+                            borderRadius: BorderRadius.circular(18.0)),
+                        child: Center(
+                          child: Text(
+                            "Sign Up",
+                            style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: "Montserrat"),
+                          ),
                         ),
                       ),
                     )

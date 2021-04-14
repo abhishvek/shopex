@@ -26,7 +26,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   eva_icons_flutter: ^3.0.0
   font_awesome_flutter: ^9.0.0
+  http: ^0.13.1
   page_transition: ^1.1.7+6
+  provider: ^5.0.0
 
 dev_dependencies:
   flutter_test:

@@ -5,9 +5,15 @@ import jwt from "jsonwebtoken";
 import * as EmailValidator from "email-validator";
 import bcrypt from "bcrypt";
 
+//200 => OK
+//201 => Email is taken
+//202 => Wrong password
+//203 => Invalid Email
+//204 => Email does not exists
+//500 => Internal Server error
+
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  //Get user data
   async fetchUser(req: any, res: Response) {
     try {
       let data = await this.createQueryBuilder("user").select().getMany();
@@ -20,12 +26,12 @@ export class UserRepository extends Repository<User> {
   //Create a new user
   async signUp(req: Request, res: Response) {
     const { username, useremail, userpassword } = req.body;
-
     try {
       let validate = EmailValidator.validate(useremail);
       if (!validate) {
-        res.status(500).json({
-          error: "Invalid email",
+        res.status(203).send({
+          authentication: false,
+          data: "Invalid email",
         });
       } else {
         let emailExists =
@@ -33,14 +39,18 @@ export class UserRepository extends Repository<User> {
             .where("user.useremail = :query", { query: useremail })
             .getCount()) > 0;
         if (emailExists) {
-          res.send({
+          res.status(201).send({
+            authentication: false,
             data: "Email is already taken!",
           });
         } else {
           const salt = await bcrypt.genSalt(10);
           await bcrypt.hash(userpassword, salt, async (error, data) => {
             if (error) {
-              res.send(error);
+              res.status(500).send({
+                authentication: false,
+                data: error,
+              });
             } else {
               let user = new User();
               user.username = username;
@@ -58,9 +68,9 @@ export class UserRepository extends Repository<User> {
                 expiresIn: 86400,
               });
 
-              res.send({
+              res.status(200).send({
                 authentication: true,
-                token: token,
+                data: token,
               });
             }
           });
@@ -76,8 +86,9 @@ export class UserRepository extends Repository<User> {
 
     let validate = EmailValidator.validate(useremail);
     if (!validate) {
-      res.json({
-        error: "User not found!",
+      return res.status(204).send({
+        authentication: false,
+        data: "User not found",
       });
     } else {
       let findUserFromDB = await this.createQueryBuilder("user")
@@ -95,17 +106,25 @@ export class UserRepository extends Repository<User> {
         findUserFromDB?.userpassword as string,
         (error, result) => {
           if (error) {
-            res.send(error);
+            return res.status(500).send({
+              authentication: false,
+              data: "Authentication error",
+            });
           }
-          if (!result) return res.send("Authentication error");
+          if (!result) {
+            return res.status(500).send({
+              authentication: false,
+              data: "Authentication error",
+            });
+          }
           if (result) {
             var token = jwt.sign({ id: userId }, "mykey", {
               expiresIn: 86400,
             });
 
-            res.send({
+            res.status(200).send({
               authentication: true,
-              token: token,
+              data: token,
             });
           }
         }
